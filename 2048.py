@@ -1,232 +1,125 @@
-import tkinter as tk
+from tkinter import Frame, Label, CENTER
 import random
-import colors  # Assuming you have a 'colors.py' file with color definitions
+import logic
+import constants as c
 
 
-class Game(tk.Frame):
+def gen():
+    return random.randint(0, c.GRID_LEN - 1)
+
+
+class GameGrid(Frame):
     def __init__(self):
-        tk.Frame.__init__(self)
+        Frame.__init__(self)
+
         self.grid()
-        self.master.title("2048 By Beny Dishon")
+        self.master.title("2048")
+        self.master.bind("<Key>", self.key_down)
 
-        self.main_grid = tk.Frame(
-            self, bg=colors.GRID_COLOR, bd=3, width=600, height=600
-        )
-        self.main_grid.grid(pady=(100, 0))
-        self.make_GUI()
-        self.start_game()
+        self.commands = {
+            c.KEY_UP: logic.up,
+            c.KEY_DOWN: logic.down,
+            c.KEY_LEFT: logic.left,
+            c.KEY_RIGHT: logic.right,
+            c.KEY_UP_ALT1: logic.up,
+            c.KEY_DOWN_ALT1: logic.down,
+            c.KEY_LEFT_ALT1: logic.left,
+            c.KEY_RIGHT_ALT1: logic.right,
+            c.KEY_UP_ALT2: logic.up,
+            c.KEY_DOWN_ALT2: logic.down,
+            c.KEY_LEFT_ALT2: logic.left,
+            c.KEY_RIGHT_ALT2: logic.right,
+        }
 
-        self.master.bind("<Left>", self.left)
-        self.master.bind("<Right>", self.right)
-        self.master.bind("<Up>", self.up)
-        self.master.bind("<Down>", self.down)
+        self.grid_cells = []
+        self.init_grid()
+        self.matrix = logic.new_game(c.GRID_LEN)
+        self.history_matrixs = []
+        self.update_grid_cells()
 
         self.mainloop()
 
-    # Grid
-    def make_GUI(self):
-        self.cells = []
-        for i in range(4):
-            row = []
-            for j in range(4):
-                cell_frame = tk.Frame(
-                    self.main_grid, bg=colors.EMPTY_CELL_COLOR, width=150, height=150
+    def init_grid(self):
+        background = Frame(
+            self, bg=c.BACKGROUND_COLOR_GAME, width=c.SIZE, height=c.SIZE
+        )
+        background.grid()
+
+        for i in range(c.GRID_LEN):
+            grid_row = []
+            for j in range(c.GRID_LEN):
+                cell = Frame(
+                    background,
+                    bg=c.BACKGROUND_COLOR_CELL_EMPTY,
+                    width=c.SIZE / c.GRID_LEN,
+                    height=c.SIZE / c.GRID_LEN,
                 )
-                cell_frame.grid(row=i, column=j, padx=5, pady=5)
-                cell_number = tk.Label(self.main_grid, bg=colors.EMPTY_CELL_COLOR)
-                cell_number.grid(row=i, column=j)
-                cell_data = {"frame": cell_frame, "number": cell_number}
-                row.append(cell_data)
-            self.cells.append(row)
+                cell.grid(row=i, column=j, padx=c.GRID_PADDING, pady=c.GRID_PADDING)
+                t = Label(
+                    master=cell,
+                    text="",
+                    bg=c.BACKGROUND_COLOR_CELL_EMPTY,
+                    justify=CENTER,
+                    font=c.FONT,
+                    width=5,
+                    height=2,
+                )
+                t.grid()
+                grid_row.append(t)
+            self.grid_cells.append(grid_row)
 
-        # Score
-        score_frame = tk.Frame(self)
-        score_frame.place(relx=0.5, y=45, anchor="center")
-        tk.Label(score_frame, text="score", font=colors.SCORE_LABEL_FONT).grid(row=0)
-        self.score_label = tk.Label(score_frame, text="0", font=colors.SCORE_FONT)
-        self.score_label.grid(row=1)
-
-    def start_game(self):
-        self.matrix = [[0] * 4 for _ in range(4)]
-
-        row = random.randint(0, 3)
-        col = random.randint(0, 3)
-        self.matrix[row][col] = 2
-        self.cells[row][col]["frame"].configure(bg=colors.CELL_COLORS[2])
-        self.cells[row][col]["number"].configure(
-            bg=colors.CELL_COLORS[2],
-            fg=colors.CELL_NUMBER_COLORS[2],
-            font=colors.CELL_NUMBER_FONTS[2],
-            text="2",
-        )
-
-        while self.matrix[row][col] != 0:
-            row = random.randint(0, 3)
-            col = random.randint(0, 3)
-
-        self.matrix[row][col] = 2
-        self.cells[row][col]["frame"].configure(bg=colors.CELL_COLORS[2])
-        self.cells[row][col]["number"].configure(
-            bg=colors.CELL_COLORS[2],
-            fg=colors.CELL_NUMBER_COLORS[2],
-            font=colors.CELL_NUMBER_FONTS[2],
-            text="2",
-        )
-
-        self.score = 0
-
-    # Matrix Manipulation
-    def stack(self):
-        new_matrix = [[0] * 4 for _ in range(4)]
-        for i in range(4):
-            fill_position = 0
-            for j in range(4):
-                if self.matrix[i][j] != 0:
-                    new_matrix[i][fill_position] = self.matrix[i][j]
-                    fill_position += 1
-        self.matrix = new_matrix
-
-    def combine(self):
-        for i in range(4):
-            for j in range(3):
-                if (
-                    self.matrix[i][j] != 0
-                    and self.matrix[i][j] == self.matrix[i][j + 1]
-                ):
-                    self.matrix[i][j] *= 2
-                    self.matrix[i][j + 1] = 0
-                    self.score += self.matrix[i][j]
-
-    def reverse(self):
-        new_matrix = []
-        for i in range(4):
-            new_matrix.append([])
-            for j in range(4):
-                new_matrix[i].append(self.matrix[i][3 - j])
-        self.matrix = new_matrix
-
-    def transpose(self):
-        new_matrix = [[0] * 4 for _ in range(4)]
-        for i in range(4):
-            for j in range(4):
-                new_matrix[i][j] = self.matrix[j][i]
-        self.matrix = new_matrix
-
-    # Add a new tile randomly to an empty cell
-    def add_new_tile(self):
-        row = random.randint(0, 3)
-        col = random.randint(0, 3)
-        while self.matrix[row][col] != 0:
-            row = random.randint(0, 3)
-            col = random.randint(0, 3)
-        self.matrix[row][col] = random.choice([2, 4])
-
-    # Update the GUI
-    def update_GUI(self):
-        for i in range(4):
-            for j in range(4):
-                cell_value = self.matrix[i][j]
-                if cell_value == 0:
-                    self.cells[i][j]["frame"].configure(bg=colors.EMPTY_CELL_COLOR)
-                    self.cells[i][j]["number"].configure(
-                        bg=colors.EMPTY_CELL_COLOR, text=""
+    def update_grid_cells(self):
+        for i in range(c.GRID_LEN):
+            for j in range(c.GRID_LEN):
+                new_number = self.matrix[i][j]
+                if new_number == 0:
+                    self.grid_cells[i][j].configure(
+                        text="", bg=c.BACKGROUND_COLOR_CELL_EMPTY
                     )
                 else:
-                    self.cells[i][j]["frame"].configure(
-                        bg=colors.CELL_COLORS[cell_value]
+                    self.grid_cells[i][j].configure(
+                        text=str(new_number),
+                        bg=c.BACKGROUND_COLOR_DICT[new_number],
+                        fg=c.CELL_COLOR_DICT[new_number],
                     )
-                    self.cells[i][j]["number"].configure(
-                        bg=colors.CELL_COLORS[cell_value],
-                        fg=colors.CELL_NUMBER_COLORS[cell_value],
-                        font=colors.CELL_NUMBER_FONTS[cell_value],
-                        text=str(cell_value),
-                    )
-        self.score_label.configure(text=self.score)
         self.update_idletasks()
 
-    # Arrow-Press Functions
-    def left(self, event):
-        self.stack()
-        self.combine()
-        self.stack()
-        self.add_new_tile()
-        self.update_GUI()
-        self.game_over()
+    def key_down(self, event):
+        key = event.keysym
+        print(event)
+        if key == c.KEY_QUIT:
+            exit()
+        if key == c.KEY_BACK and len(self.history_matrixs) > 1:
+            self.matrix = self.history_matrixs.pop()
+            self.update_grid_cells()
+            print("back on step total step:", len(self.history_matrixs))
+        elif key in self.commands:
+            self.matrix, done = self.commands[key](self.matrix)
+            if done:
+                self.matrix = logic.add_two(self.matrix)
+                # record last move
+                self.history_matrixs.append(self.matrix)
+                self.update_grid_cells()
+                if logic.game_state(self.matrix) == "win":
+                    self.grid_cells[1][1].configure(
+                        text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY
+                    )
+                    self.grid_cells[1][2].configure(
+                        text="Win!", bg=c.BACKGROUND_COLOR_CELL_EMPTY
+                    )
+                if logic.game_state(self.matrix) == "lose":
+                    self.grid_cells[1][1].configure(
+                        text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY
+                    )
+                    self.grid_cells[1][2].configure(
+                        text="Lose!", bg=c.BACKGROUND_COLOR_CELL_EMPTY
+                    )
 
-    def right(self, event):
-        self.reverse()
-        self.stack()
-        self.combine()
-        self.stack()
-        self.reverse()
-        self.add_new_tile()
-        self.update_GUI()
-        self.game_over()
-
-    def up(self, event):
-        self.transpose()
-        self.stack()
-        self.combine()
-        self.stack()
-        self.transpose()
-        self.add_new_tile()
-        self.update_GUI()
-        self.game_over()
-
-    def down(self, event):
-        self.transpose()
-        self.reverse()
-        self.stack()
-        self.combine()
-        self.stack()
-        self.reverse()
-        self.transpose()
-        self.add_new_tile()
-        self.update_GUI()
-        self.game_over()
-
-    # Check if Moves are possible
-    def horizontal_move_exists(self):
-        for i in range(4):
-            for j in range(3):
-                if self.matrix[i][j] == self.matrix[i][j + 1]:
-                    return True
-        return False
-
-    def vertical_move_exists(self):
-        for i in range(3):
-            for j in range(4):
-                if self.matrix[i][j] == self.matrix[i + 1][j]:
-                    return True
-        return False
-
-    # Check if Game is Over
-    def game_over(self):
-        if any(2048 in row for row in self.matrix):
-            self.show_game_over_message("You Win!", colors.WINNER_BG)
-        elif (
-            not any(0 in row for row in self.matrix)
-            and not self.horizontal_move_exists()
-            and not self.vertical_move_exists()
-        ):
-            self.show_game_over_message("Game Over!", colors.LOSER_BG)
-
-    def show_game_over_message(self, message, bg_color):
-        if not hasattr(self, "game_over_label_frame"):
-            self.game_over_label_frame = tk.Frame(self.main_grid, borderwidth=2)
-            self.game_over_label_frame.place(relx=0.5, rely=0.5, anchor="center")
-        tk.Label(
-            self.game_over_label_frame,
-            text=message,
-            bg=bg_color,
-            fg=colors.GAME_OVER_FONT_COLOR,
-            font=colors.GAME_OVER_FONT,
-        ).pack()
+    def generate_next(self):
+        index = (gen(), gen())
+        while self.matrix[index[0]][index[1]] != 0:
+            index = (gen(), gen())
+        self.matrix[index[0]][index[1]] = 2
 
 
-def main():
-    Game()
-
-
-if __name__ == "__main__":
-    main()
+game_grid = GameGrid()
