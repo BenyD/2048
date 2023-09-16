@@ -1,6 +1,6 @@
 # 2048 Game in Python
 
-![2048 Game](game_screenshot.png)
+### By Beny Dishon
 
 ## Introduction
 
@@ -21,19 +21,19 @@ To run the game on your local machine, follow these steps:
 1. Clone this repository:
 
 ```bash
-git clone https://github.com/yourusername/2048-game-python.git
+git clone https://github.com/BenyD/2048.git
 ```
 
 2. Navigate to the project directory:
 
 ```bash
-cd 2048-game-python
+cd 2048
 ```
 
 3. Run the game:
 
 ```bash
-python main.py
+python 2048.py
 ```
 
 4. Use the arrow keys to move tiles and try to reach the 2048 tile.
@@ -53,10 +53,6 @@ Contributions are welcome! If you'd like to contribute to this project, please f
 3. Make your changes and test them thoroughly.
 4. Create a pull request with a clear description of your changes.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## Acknowledgments
 
 - This project was inspired by the original 2048 game created by Gabriele Cirulli.
@@ -64,8 +60,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-If you have any questions or suggestions, feel free to reach out to us at [your.email@example.com](mailto:your.email@example.com).
-
----
-
-You can customize this README file with your specific project details and GitHub repository information. Make sure to include a screenshot of your game to make it visually appealing. Good luck with your Mini Project, and I hope this README helps you get started!
+If you have any questions or suggestions, feel free to reach out to us at [benydishon@gmail.com](mailto:benydishon@gmail.com).
